@@ -1,6 +1,7 @@
 """Bioinformatics data management audit of a directory tree."""
 import argparse
 import datetime
+import json
 import os
 import sys
 
@@ -38,6 +39,25 @@ class DirectoryTreeSummary(object):
     def update_last_touched(self, timestamp):
         if timestamp > self.last_touched:
             self.last_touched = timestamp
+
+    def as_dict(self):
+        """Return dictionary representation of the directory tree summary."""
+        data = {
+            "path": self.path,
+            "level": self.level,
+            "size_in_bytes": self.size_in_bytes,
+            "num_files": self.num_files,
+            "last_touched": self.last_touched,
+            "sub_directories": [],
+        }
+        for d in self.sub_directories:
+            data["sub_directories"].append(d.as_dict())
+        return data
+
+
+    def to_json(self, fh):
+        """Write out to JSON."""
+        json.dump(self.as_dict(), fh, indent=2)
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -106,7 +126,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     start = time()
+
     directory = build_tree(args.directory, 2, 0)
+
     print_tree(directory, sort_by=args.sort_by, reverse=args.reverse)
+
+    with open("dir_tree_summary.json", "w") as fh:
+        directory.to_json(fh)
+
     elapsed = time() - start
+
     print("Time in seconds: {}".format(elapsed))
