@@ -1,0 +1,6 @@
+- Add to_json and from_json to Directory class
+- Split generation of tree and priting of tree into separate files because we
+  will want to generate other representations of the tree
+- Add command line options to specify target_level
+- Switch to click and add colour coding
+- Build plugin system for finding files of interest (sam, fastq, bam, etc)
