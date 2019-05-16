@@ -24,7 +24,7 @@ class DirectoryTreeSummary(object):
         self.level = level
         self.size_in_bytes = 0
         self.num_files = 0
-        self.sub_directories = []
+        self.subdirectories = []
         self.last_touched = 0
 
     def __str__(self):
@@ -48,10 +48,10 @@ class DirectoryTreeSummary(object):
             "size_in_bytes": self.size_in_bytes,
             "num_files": self.num_files,
             "last_touched": self.last_touched,
-            "sub_directories": [],
+            "subdirectories": [],
         }
-        for d in self.sub_directories:
-            data["sub_directories"].append(d.as_dict())
+        for d in self.subdirectories:
+            data["subdirectories"].append(d.as_dict())
         return data
 
 
@@ -91,7 +91,7 @@ def build_tree(path, target_level, level):
         if is_dir:
             sub_directory = build_tree(entry.path, target_level, level+1)
             if level < target_level:
-                directory.sub_directories.append(sub_directory)
+                directory.subdirectories.append(sub_directory)
             directory.size_in_bytes += sub_directory.size_in_bytes
             directory.num_files += sub_directory.num_files
             directory.update_last_touched(sub_directory.last_touched)
@@ -110,7 +110,7 @@ def build_tree(path, target_level, level):
 def print_tree(directory, sort_by, reverse):
     print(directory)
     sub_dirs_sorted = sorted(
-        directory.sub_directories,
+        directory.subdirectories,
         key=attrgetter(SORT_LOOKUP[sort_by]),
         reverse=reverse
     )
