@@ -15,8 +15,8 @@ SORT_LOOKUP = {
 }
 
 
-class Directory(object):
-    """Summary information about a directory."""
+class DirectoryTreeSummary(object):
+    """Summary information about a directory tree."""
 
     def __init__(self, path, level):
         self.path = path
@@ -61,7 +61,7 @@ def build_tree(path, target_level, level):
     """
     total_size = 0
     num_files = 0
-    directory = Directory(path, level)
+    directory = DirectoryTreeSummary(path, level)
     for entry in os.scandir(path):
         try:
             is_dir = entry.is_dir(follow_symlinks=False)
