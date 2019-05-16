@@ -24,8 +24,8 @@ class DirectoryTreeSummary(object):
         self.level = level
         self.size_in_bytes = 0
         self.num_files = 0
-        self.subdirectories = []
         self.last_touched = 0
+        self.subdirectories = []
 
     def __str__(self):
         return "{} {:7d} {} {}{}".format(
@@ -54,10 +54,39 @@ class DirectoryTreeSummary(object):
             data["subdirectories"].append(d.as_dict())
         return data
 
+    def to_json(self, fh=None):
+        """Return DirectoryTreeSummary as JSON string."""
+        if fh is None:
+            json.dumps(self.as_dict(), indent=2)
+        else:
+            json.dumps(self.as_dict(), fh, indent=2)
 
-    def to_json(self, fh):
-        """Write out to JSON."""
-        json.dump(self.as_dict(), fh, indent=2)
+    @classmethod
+    def from_dict(cls, data):
+        """Return DirectoryTreeSummary from Python dictionary."""
+        dts = cls(data["path"], data["level"])
+        dts.size_in_bytes = data["size_in_bytes"]
+
+        dts.size_in_bytes = data["size_in_bytes"]
+        dts.num_files = data["num_files"]
+        dts.last_touched = data["last_touched"]
+
+        dts.subdirectories = []
+
+        for subdir in data["subdirectories"]:
+            dts.subdirectories.append(cls.from_dict(subdir))
+
+        return dts
+
+    @classmethod
+    def from_json(cls, json_str):
+        """Return DirectoryTreeSummary from JSON string."""
+        return cls.from_dict(json.loads(json_str))
+
+    @classmethod
+    def from_file(cls, fh):
+        """Return DirectoryTreeSummary from JSON file handle."""
+        return cls.from_dict(json.load(fh))
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -89,12 +118,12 @@ def build_tree(path, target_level, level):
             print('Error calling is_dir():', error, file=sys.stderr)
             continue
         if is_dir:
-            sub_directory = build_tree(entry.path, target_level, level+1)
+            subdir = build_tree(entry.path, target_level, level+1)
             if level < target_level:
-                directory.subdirectories.append(sub_directory)
-            directory.size_in_bytes += sub_directory.size_in_bytes
-            directory.num_files += sub_directory.num_files
-            directory.update_last_touched(sub_directory.last_touched)
+                directory.subdirectories.append(subdir)
+            directory.size_in_bytes += subdir.size_in_bytes
+            directory.num_files += subdir.num_files
+            directory.update_last_touched(subdir.last_touched)
         else:
             try:
                 stat = entry.stat(follow_symlinks=False)
@@ -114,8 +143,8 @@ def print_tree(directory, sort_by, reverse):
         key=attrgetter(SORT_LOOKUP[sort_by]),
         reverse=reverse
     )
-    for sub_directory in sub_dirs_sorted:
-        print_tree(sub_directory, sort_by, reverse)
+    for subdir in sub_dirs_sorted:
+        print_tree(subdir, sort_by, reverse)
 
 
 if __name__ == "__main__":
@@ -130,9 +159,6 @@ if __name__ == "__main__":
     directory = build_tree(args.directory, 2, 0)
 
     print_tree(directory, sort_by=args.sort_by, reverse=args.reverse)
-
-    with open("dir_tree_summary.json", "w") as fh:
-        directory.to_json(fh)
 
     elapsed = time() - start
 
