@@ -30,6 +30,15 @@ Fixed
 Security
 ^^^^^^^^
 
+[0.1.2] - 2019-06-21
+--------------------
+
+Fixed
+^^^^^
+
+- Issue when adding up sizes of text and gzipped files
+
+
 [0.1.1] - 2019-06-21
 --------------------
 

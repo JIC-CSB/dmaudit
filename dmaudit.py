@@ -129,8 +129,6 @@ def build_tree(path, target_level, level):
     is_dir() or stat() fails, print an error message to stderr
     and assume zero size (for example, file has been deleted).
     """
-    total_size = 0
-    num_files = 0
     directory = DirectoryTreeSummary(path, level)
     for entry in os.scandir(path):
         try:
@@ -143,6 +141,8 @@ def build_tree(path, target_level, level):
             if level < target_level:
                 directory.subdirectories.append(subdir)
             directory.size_in_bytes += subdir.size_in_bytes
+            directory.size_in_bytes_text += subdir.size_in_bytes_text
+            directory.size_in_bytes_gzip += subdir.size_in_bytes_gzip
             directory.num_files += subdir.num_files
             directory.update_last_touched(subdir.last_touched)
         else:
@@ -153,9 +153,9 @@ def build_tree(path, target_level, level):
                 directory.update_last_touched(stat.st_mtime)
                 mimetype = magic.from_file(entry.path, mime=True)
                 if mimetype.startswith("text"):
-                    directory.size_in_bytes_text = stat.st_size
+                    directory.size_in_bytes_text += stat.st_size
                 elif mimetype == "application/x-gzip":
-                    directory.size_in_bytes_gzip = stat.st_size
+                    directory.size_in_bytes_gzip += stat.st_size
             except OSError as error:
                 print('Error calling stat():', error, file=sys.stderr)
     return directory
@@ -191,7 +191,7 @@ def dmaudit(directory, level, sort_by, reverse):
         # Want largest object first.
         reverse = not reverse
 
-    print("    Total      text    gzip    #files Last write")
+    print("    Total      text      gzip  #files Last write")
     print_tree(directory, sort_by=sort_by, reverse=reverse)
 
     elapsed = time() - start
