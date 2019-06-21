@@ -162,6 +162,10 @@ def build_tree(path, target_level, level):
 
 
 def print_tree(directory, sort_by, reverse):
+    if sort_by == "size":
+        # Want largest object first.
+        reverse = not reverse
+
     directory.print()
     sub_dirs_sorted = sorted(
         directory.subdirectories,
