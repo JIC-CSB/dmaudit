@@ -162,9 +162,6 @@ def build_tree(path, target_level, level):
 
 
 def print_tree(directory, sort_by, reverse):
-    if sort_by == "size":
-        # Want largest object first.
-        reverse = not reverse
 
     directory.print()
     sub_dirs_sorted = sorted(
@@ -190,8 +187,11 @@ def dmaudit(directory, level, sort_by, reverse):
 
     directory = build_tree(directory, level, 0)
 
-    print("    Total      text    gzip    #files Last write")
+    if sort_by == "size":
+        # Want largest object first.
+        reverse = not reverse
 
+    print("    Total      text    gzip    #files Last write")
     print_tree(directory, sort_by=sort_by, reverse=reverse)
 
     elapsed = time() - start
