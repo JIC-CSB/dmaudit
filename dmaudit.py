@@ -8,6 +8,8 @@ import sys
 from operator import attrgetter
 from time import time
 
+import magic
+
 SORT_LOOKUP = {
     "size": "size_in_bytes",
     "mtime": "last_touched",
@@ -27,9 +29,14 @@ class DirectoryTreeSummary(object):
         self.last_touched = 0
         self.subdirectories = []
 
+        self.size_in_bytes_text = 0
+        self.size_in_bytes_gzip = 0
+
     def __str__(self):
-        return "{} {:7d} {} {}{}".format(
+        return "{} {:7} {:7} {:7d} {} {}{}".format(
             sizeof_fmt(self.size_in_bytes),
+            sizeof_fmt(self.size_in_bytes_text),
+            sizeof_fmt(self.size_in_bytes_gzip),
             self.num_files,
             date_fmt(self.last_touched),
             "-" * self.level,
@@ -46,6 +53,8 @@ class DirectoryTreeSummary(object):
             "path": self.path,
             "level": self.level,
             "size_in_bytes": self.size_in_bytes,
+            "size_in_bytes_text": self.size_in_bytes_text,
+            "size_in_bytes_gzip": self.size_in_bytes_gzip,
             "num_files": self.num_files,
             "last_touched": self.last_touched,
             "subdirectories": [],
@@ -66,8 +75,8 @@ class DirectoryTreeSummary(object):
         """Return DirectoryTreeSummary from Python dictionary."""
         dts = cls(data["path"], data["level"])
         dts.size_in_bytes = data["size_in_bytes"]
-
-        dts.size_in_bytes = data["size_in_bytes"]
+        dts.size_in_bytes_text = data["size_in_bytes_text"]
+        dts.size_in_bytes_gzip = data["size_in_bytes_gzip"]
         dts.num_files = data["num_files"]
         dts.last_touched = data["last_touched"]
 
@@ -129,8 +138,12 @@ def build_tree(path, target_level, level):
                 stat = entry.stat(follow_symlinks=False)
                 directory.size_in_bytes += stat.st_size
                 directory.num_files += 1
-                last_touched = stat.st_mtime
-                directory.update_last_touched(last_touched)
+                directory.update_last_touched(stat.st_mtime)
+                mimetype = magic.from_file(entry.path, mime=True)
+                if mimetype.startswith("text"):
+                    directory.size_in_bytes_text = stat.st_size
+                elif mimetype == "application/x-gzip":
+                    directory.size_in_bytes_gzip = stat.st_size
             except OSError as error:
                 print('Error calling stat():', error, file=sys.stderr)
     return directory
@@ -157,6 +170,8 @@ if __name__ == "__main__":
     start = time()
 
     directory = build_tree(args.directory, 2, 0)
+
+    print("    Total      text    gzip    #files Last write")
 
     print_tree(directory, sort_by=args.sort_by, reverse=args.reverse)
 
