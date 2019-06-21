@@ -51,7 +51,8 @@ class DirectoryTreeSummary(object):
         click.secho(date_fmt(self.last_touched) + " ", nl=False)
         color_index = self.level % len(LEVEL_COLORS)
         level_color = LEVEL_COLORS[color_index]
-        click.secho("-" * self.level + " ", nl=False, fg=level_color)
+        if self.level != 0:
+            click.secho("-" * self.level + " ", nl=False, fg=level_color)
         click.secho(os.path.basename(self.path), fg=level_color)
 
     def update_last_touched(self, timestamp):
