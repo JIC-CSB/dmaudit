@@ -1,5 +1,5 @@
 """Bioinformatics data management audit of a directory tree."""
-import argparse
+
 import datetime
 import json
 import os
@@ -8,7 +8,18 @@ import sys
 from operator import attrgetter
 from time import time
 
+import click
 import magic
+
+LEVEL_COLORS = [
+    None,
+    "bright_cyan",
+    "bright_magenta",
+    "blue",
+    "magenta",
+    "cyan",
+    "bright_blue",
+]
 
 SORT_LOOKUP = {
     "size": "size_in_bytes",
@@ -32,16 +43,16 @@ class DirectoryTreeSummary(object):
         self.size_in_bytes_text = 0
         self.size_in_bytes_gzip = 0
 
-    def __str__(self):
-        return "{} {:7} {:7} {:7d} {} {}{}".format(
-            sizeof_fmt(self.size_in_bytes),
-            sizeof_fmt(self.size_in_bytes_text),
-            sizeof_fmt(self.size_in_bytes_gzip),
-            self.num_files,
-            date_fmt(self.last_touched),
-            "-" * self.level,
-            os.path.basename(self.path)
-        )
+    def print(self):
+        click.secho(sizeof_fmt(self.size_in_bytes) + " ", nl=False)
+        click.secho(sizeof_fmt(self.size_in_bytes_text) + " ", nl=False)
+        click.secho(sizeof_fmt(self.size_in_bytes_gzip) + " ", nl=False)
+        click.secho("{:7d}".format(self.num_files) + " ", nl=False)
+        click.secho(date_fmt(self.last_touched) + " ", nl=False)
+        color_index = self.level % len(LEVEL_COLORS)
+        level_color = LEVEL_COLORS[color_index]
+        click.secho("-" * self.level + " ", nl=False, fg=level_color)
+        click.secho(os.path.basename(self.path), fg=level_color)
 
     def update_last_touched(self, timestamp):
         if timestamp > self.last_touched:
@@ -150,7 +161,7 @@ def build_tree(path, target_level, level):
 
 
 def print_tree(directory, sort_by, reverse):
-    print(directory)
+    directory.print()
     sub_dirs_sorted = sorted(
         directory.subdirectories,
         key=attrgetter(SORT_LOOKUP[sort_by]),
@@ -160,21 +171,28 @@ def print_tree(directory, sort_by, reverse):
         print_tree(subdir, sort_by, reverse)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument("directory")
-    parser.add_argument("-s", "--sort-by", choices=["size", "mtime", "name"], default="size")  # NOQA
-    parser.add_argument("-r", "--reverse", action="store_true")
-    args = parser.parse_args()
-
+@click.command()
+@click.argument("directory")
+@click.option("-l", "--level", type=int, default=2)
+@click.option(
+    "-s", "--sort-by",
+    type=click.Choice(["size", "mtime", "name"]),
+    default="size"
+)
+@click.option("-r", "--reverse", default=False)
+def dmaudit(directory, level, sort_by, reverse):
     start = time()
 
-    directory = build_tree(args.directory, 2, 0)
+    directory = build_tree(directory, level, 0)
 
     print("    Total      text    gzip    #files Last write")
 
-    print_tree(directory, sort_by=args.sort_by, reverse=args.reverse)
+    print_tree(directory, sort_by=sort_by, reverse=reverse)
 
     elapsed = time() - start
 
     print("Time in seconds: {}".format(elapsed))
+
+
+if __name__ == "__main__":
+    dmaudit()
