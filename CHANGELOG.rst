@@ -30,6 +30,17 @@ Fixed
 Security
 ^^^^^^^^
 
+
+[0.2.0] - 2019-07-01
+--------------------
+
+Added
+^^^^^
+
+- Added command line option to opt into calculating sizes of text and gzipped files
+
+
+
 [0.1.2] - 2019-06-21
 --------------------
 

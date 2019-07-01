@@ -43,10 +43,13 @@ class DirectoryTreeSummary(object):
         self.size_in_bytes_text = 0
         self.size_in_bytes_gzip = 0
 
-    def print(self):
+    def print(self, check_mimetype):
         click.secho(sizeof_fmt(self.size_in_bytes) + " ", nl=False)
-        click.secho(sizeof_fmt(self.size_in_bytes_text) + " ", nl=False)
-        click.secho(sizeof_fmt(self.size_in_bytes_gzip) + " ", nl=False)
+
+        if check_mimetype:
+            click.secho(sizeof_fmt(self.size_in_bytes_text) + " ", nl=False)
+            click.secho(sizeof_fmt(self.size_in_bytes_gzip) + " ", nl=False)
+
         click.secho("{:7d}".format(self.num_files) + " ", nl=False)
         click.secho(date_fmt(self.last_touched) + " ", nl=False)
         color_index = self.level % len(LEVEL_COLORS)
@@ -124,7 +127,7 @@ def date_fmt(timestamp):
     return datetime_obj.strftime("%Y-%m-%d")
 
 
-def build_tree(path, target_level, level):
+def build_tree(path, target_level, level, check_mimetype=False):
     """Return total size of files in path and subdirs. If
     is_dir() or stat() fails, print an error message to stderr
     and assume zero size (for example, file has been deleted).
@@ -137,7 +140,11 @@ def build_tree(path, target_level, level):
             print('Error calling is_dir():', error, file=sys.stderr)
             continue
         if is_dir:
-            subdir = build_tree(entry.path, target_level, level+1)
+            subdir = build_tree(
+                path=entry.path,
+                target_level=target_level,
+                level=level+1,
+                check_mimetype=check_mimetype)
             if level < target_level:
                 directory.subdirectories.append(subdir)
             directory.size_in_bytes += subdir.size_in_bytes
@@ -151,48 +158,70 @@ def build_tree(path, target_level, level):
                 directory.size_in_bytes += stat.st_size
                 directory.num_files += 1
                 directory.update_last_touched(stat.st_mtime)
-                mimetype = magic.from_file(entry.path, mime=True)
-                if mimetype.startswith("text"):
-                    directory.size_in_bytes_text += stat.st_size
-                elif mimetype == "application/x-gzip":
-                    directory.size_in_bytes_gzip += stat.st_size
+                if check_mimetype:
+                    mimetype = magic.from_file(entry.path, mime=True)
+                    if mimetype.startswith("text"):
+                        directory.size_in_bytes_text += stat.st_size
+                    elif mimetype == "application/x-gzip":
+                        directory.size_in_bytes_gzip += stat.st_size
             except OSError as error:
                 print('Error calling stat():', error, file=sys.stderr)
     return directory
 
 
-def print_tree(directory, sort_by, reverse):
+def print_tree(directory, sort_by, reverse, check_mimetype=False):
 
-    directory.print()
+    directory.print(check_mimetype=check_mimetype)
     sub_dirs_sorted = sorted(
         directory.subdirectories,
         key=attrgetter(SORT_LOOKUP[sort_by]),
         reverse=reverse
     )
     for subdir in sub_dirs_sorted:
-        print_tree(subdir, sort_by, reverse)
+        print_tree(subdir, sort_by, reverse, check_mimetype)
 
 
 @click.command()
 @click.argument("directory")
-@click.option("-l", "--level", type=int, default=2)
+@click.option(
+    "-l", "--level",
+    type=int,
+    default=2,
+    help="Number of levels of nesting to report (default 2)"
+)
 @click.option(
     "-s", "--sort-by",
     type=click.Choice(["size", "mtime", "name"]),
-    default="size"
+    default="size",
+    help="Parameter to sort by (default size)"
 )
-@click.option("-r", "--reverse", default=False)
-def dmaudit(directory, level, sort_by, reverse):
+@click.option("-r", "--reverse", default=False, is_flag=True)
+@click.option(
+    "-m", "--check-mimetype",
+    is_flag=True,
+    default=False,
+    help="Report stats of file mimetypes (can be slow)"
+)
+def dmaudit(directory, level, sort_by, reverse, check_mimetype):
     start = time()
 
-    directory = build_tree(directory, level, 0)
+    directory = build_tree(directory, level, 0, check_mimetype=check_mimetype)
 
     if sort_by == "size":
         # Want largest object first.
         reverse = not reverse
 
-    print("    Total      text      gzip  #files Last write")
-    print_tree(directory, sort_by=sort_by, reverse=reverse)
+    if check_mimetype:
+        print("    Total      text      gzip  #files Last write")
+    else:
+        print("    Total  #files Last write")
+
+    print_tree(
+        directory=directory,
+        sort_by=sort_by,
+        reverse=reverse,
+        check_mimetype=check_mimetype
+    )
 
     elapsed = time() - start
 
