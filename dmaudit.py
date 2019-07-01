@@ -11,6 +11,9 @@ from time import time
 import click
 import magic
 
+
+__version__ = "0.2.0"
+
 LEVEL_COLORS = [
     None,
     "bright_cyan",
@@ -182,6 +185,7 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
 
 
 @click.command()
+@click.version_option(__version__)
 @click.argument("directory")
 @click.option(
     "-l", "--level",

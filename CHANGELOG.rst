@@ -37,6 +37,7 @@ Security
 Added
 ^^^^^
 
+- Added ``--version`` option
 - Added command line option to opt into calculating sizes of text and gzipped files
 
 
