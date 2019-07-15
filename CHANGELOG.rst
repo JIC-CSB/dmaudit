@@ -11,6 +11,8 @@ Added
 ^^^^^
 
 - Made output prettier
+- Made script more robust in cases of directories being deleted whilst the
+  script is running
 
 
 Changed

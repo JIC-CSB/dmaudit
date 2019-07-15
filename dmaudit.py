@@ -22,7 +22,7 @@ LOGO = """     _                           _ _ _
  / _` | '_ ` _ \ / _` | | | |/ _` | | __|
 | (_| | | | | | | (_| | |_| | (_| | | |_
  \__,_|_| |_| |_|\__,_|\__,_|\__,_|_|\__|
-"""
+"""  # NOQA
 
 LEVEL_COLORS = [
     None,
@@ -146,39 +146,45 @@ def build_tree(path, target_level, level, check_mimetype=False):
     and assume zero size (for example, file has been deleted).
     """
     directory = DirectoryTreeSummary(path, level)
-    for entry in os.scandir(path):
-        try:
-            is_dir = entry.is_dir(follow_symlinks=False)
-        except OSError as error:
-            logger.info('Error calling is_dir(): {}'.format(error))
-            continue
-        if is_dir:
-            subdir = build_tree(
-                path=entry.path,
-                target_level=target_level,
-                level=level+1,
-                check_mimetype=check_mimetype)
-            if level < target_level:
-                directory.subdirectories.append(subdir)
-            directory.size_in_bytes += subdir.size_in_bytes
-            directory.size_in_bytes_text += subdir.size_in_bytes_text
-            directory.size_in_bytes_gzip += subdir.size_in_bytes_gzip
-            directory.num_files += subdir.num_files
-            directory.update_last_touched(subdir.last_touched)
-        else:
+    try:
+        for entry in os.scandir(path):
             try:
-                stat = entry.stat(follow_symlinks=False)
-                directory.size_in_bytes += stat.st_size
-                directory.num_files += 1
-                directory.update_last_touched(stat.st_mtime)
-                if check_mimetype:
-                    mimetype = magic.from_file(entry.path, mime=True)
-                    if mimetype.startswith("text"):
-                        directory.size_in_bytes_text += stat.st_size
-                    elif mimetype == "application/x-gzip":
-                        directory.size_in_bytes_gzip += stat.st_size
+                is_dir = entry.is_dir(follow_symlinks=False)
             except OSError as error:
-                logger.info('Error calling stat(): {}'.format(error))
+                logger.info('Error calling is_dir(): {}'.format(error))
+                continue
+            if is_dir:
+                subdir = build_tree(
+                    path=entry.path,
+                    target_level=target_level,
+                    level=level+1,
+                    check_mimetype=check_mimetype)
+                if level < target_level:
+                    directory.subdirectories.append(subdir)
+                directory.size_in_bytes += subdir.size_in_bytes
+                directory.size_in_bytes_text += subdir.size_in_bytes_text
+                directory.size_in_bytes_gzip += subdir.size_in_bytes_gzip
+                directory.num_files += subdir.num_files
+                directory.update_last_touched(subdir.last_touched)
+            else:
+                try:
+                    stat = entry.stat(follow_symlinks=False)
+                    directory.size_in_bytes += stat.st_size
+                    directory.num_files += 1
+                    directory.update_last_touched(stat.st_mtime)
+                    if check_mimetype:
+                        mimetype = magic.from_file(entry.path, mime=True)
+                        if mimetype.startswith("text"):
+                            directory.size_in_bytes_text += stat.st_size
+                        elif mimetype == "application/x-gzip":
+                            directory.size_in_bytes_gzip += stat.st_size
+                except OSError as error:
+                    logger.info('Error calling stat(): {}'.format(error))
+    except FileNotFoundError as error:
+        # Directory of interested deleted before os.scandir called.
+        # Assume zero size.
+        logger.info("Error calling os.scandir({}): {}".format(path, error))
+
     return directory
 
 
