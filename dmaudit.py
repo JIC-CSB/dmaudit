@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import logging
 import os
 import sys
 
@@ -10,6 +11,8 @@ from time import time
 
 import click
 import magic
+
+logger = logging.Logger(__name__)
 
 
 __version__ = "0.2.0"
@@ -148,7 +151,7 @@ def build_tree(path, target_level, level, check_mimetype=False):
         try:
             is_dir = entry.is_dir(follow_symlinks=False)
         except OSError as error:
-            print('Error calling is_dir():', error, file=sys.stderr)
+            logger.info('Error calling is_dir(): {}'.format(error))
             continue
         if is_dir:
             subdir = build_tree(
@@ -176,7 +179,7 @@ def build_tree(path, target_level, level, check_mimetype=False):
                     elif mimetype == "application/x-gzip":
                         directory.size_in_bytes_gzip += stat.st_size
             except OSError as error:
-                print('Error calling stat():', error, file=sys.stderr)
+                logger.info('Error calling stat(): {}'.format(error))
     return directory
 
 
