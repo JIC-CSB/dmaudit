@@ -10,10 +10,6 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
-- Made output prettier
-- Made script more robust in cases of directories being deleted whilst the
-  script is running
-
 
 Changed
 ^^^^^^^
@@ -30,11 +26,25 @@ Removed
 Fixed
 ^^^^^
 
-- Fixed issue that audited directory not displayed when path ends with a /
-
 
 Security
 ^^^^^^^^
+
+
+[0.3.0] - 2019-07-15
+--------------------
+
+Added
+^^^^^
+
+- Made output prettier
+- Made script more robust in cases of directories being deleted whilst the
+  script is running
+
+Fixed
+^^^^^
+
+- Fixed issue that audited directory not displayed when path ends with a /
 
 
 [0.2.0] - 2019-07-01
