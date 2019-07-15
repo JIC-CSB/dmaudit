@@ -4,7 +4,6 @@ import datetime
 import json
 import logging
 import os
-import sys
 
 from operator import attrgetter
 from time import time
@@ -57,7 +56,7 @@ class DirectoryTreeSummary(object):
         self.size_in_bytes_text = 0
         self.size_in_bytes_gzip = 0
 
-    def print(self, check_mimetype):
+    def echo(self, check_mimetype):
         click.secho(sizeof_fmt(self.size_in_bytes) + " ", nl=False)
 
         if check_mimetype:
@@ -143,7 +142,7 @@ def date_fmt(timestamp):
 
 def build_tree(path, target_level, level, check_mimetype=False):
     """Return total size of files in path and subdirs. If
-    is_dir() or stat() fails, print an error message to stderr
+    is_dir() or stat() fails, log the error message
     and assume zero size (for example, file has been deleted).
     """
     directory = DirectoryTreeSummary(path, level)
@@ -185,7 +184,7 @@ def build_tree(path, target_level, level, check_mimetype=False):
 
 def print_tree(directory, sort_by, reverse, check_mimetype=False):
 
-    directory.print(check_mimetype=check_mimetype)
+    directory.echo(check_mimetype=check_mimetype)
     sub_dirs_sorted = sorted(
         directory.subdirectories,
         key=attrgetter(SORT_LOOKUP[sort_by]),
@@ -197,7 +196,10 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
 
 @click.command()
 @click.version_option(__version__)
-@click.argument("directory", type=click.Path(exists=True, file_okay=False, resolve_path=True))
+@click.argument(
+    "directory",
+    type=click.Path(exists=True, file_okay=False, resolve_path=True)
+)
 @click.option(
     "-l", "--level",
     type=int,
@@ -236,10 +238,11 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
         # Want largest object first.
         reverse = not reverse
 
+    header = "    Total  #files Last write"
     if check_mimetype:
-        click.secho("    Total      text      gzip  #files Last write", fg="blue")
-    else:
-        click.secho("    Total  #files Last write", fg="blue")
+        header = "    Total      text      gzip  #files Last write"
+
+    click.secho(header, fg="blue")
 
     print_tree(
         directory=directory,
@@ -247,8 +250,6 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
         reverse=reverse,
         check_mimetype=check_mimetype
     )
-
-
 
 
 if __name__ == "__main__":
