@@ -10,6 +10,8 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
+- Made output prettier
+
 
 Changed
 ^^^^^^^
@@ -25,6 +27,8 @@ Removed
 
 Fixed
 ^^^^^
+
+- Fixed issue that audited directory not displayed when path ends with a /
 
 
 Security

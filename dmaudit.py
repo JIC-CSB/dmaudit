@@ -14,6 +14,14 @@ import magic
 
 __version__ = "0.2.0"
 
+LOGO = """     _                           _ _ _
+    | |                         | (_) |
+  __| |_ __ ___   __ _ _   _  __| |_| |_
+ / _` | '_ ` _ \ / _` | | | |/ _` | | __|
+| (_| | | | | | | (_| | |_| | (_| | | |_
+ \__,_|_| |_| |_|\__,_|\__,_|\__,_|_|\__|
+"""
+
 LEVEL_COLORS = [
     None,
     "bright_cyan",
@@ -186,7 +194,7 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
 
 @click.command()
 @click.version_option(__version__)
-@click.argument("directory")
+@click.argument("directory", type=click.Path(exists=True, file_okay=False, resolve_path=True))
 @click.option(
     "-l", "--level",
     type=int,
@@ -209,16 +217,26 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
 def dmaudit(directory, level, sort_by, reverse, check_mimetype):
     start = time()
 
+    click.secho(LOGO, fg="blue")
+    click.secho("Auditing directory: ", nl=False)
+    click.secho(directory, fg="green")
+
     directory = build_tree(directory, level, 0, check_mimetype=check_mimetype)
+
+    elapsed = time() - start
+    click.secho("Time in seconds   : ", nl=False)
+    click.secho("{:.2f}".format(elapsed), fg="green")
+
+    click.secho("")
 
     if sort_by == "size":
         # Want largest object first.
         reverse = not reverse
 
     if check_mimetype:
-        print("    Total      text      gzip  #files Last write")
+        click.secho("    Total      text      gzip  #files Last write", fg="blue")
     else:
-        print("    Total  #files Last write")
+        click.secho("    Total  #files Last write", fg="blue")
 
     print_tree(
         directory=directory,
@@ -227,9 +245,7 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
         check_mimetype=check_mimetype
     )
 
-    elapsed = time() - start
 
-    print("Time in seconds: {}".format(elapsed))
 
 
 if __name__ == "__main__":
