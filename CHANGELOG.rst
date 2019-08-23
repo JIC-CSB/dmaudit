@@ -10,6 +10,8 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
+- Version of dmaudit to report
+
 
 Changed
 ^^^^^^^
@@ -25,6 +27,8 @@ Removed
 
 Fixed
 ^^^^^
+
+- Fix defect when encountering a subdirectory where the user lacks permissions 
 
 
 Security
