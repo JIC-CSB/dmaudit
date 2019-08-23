@@ -180,8 +180,10 @@ def build_tree(path, target_level, level, check_mimetype=False):
                             directory.size_in_bytes_gzip += stat.st_size
                 except OSError as error:
                     logger.info('Error calling stat(): {}'.format(error))
-    except FileNotFoundError as error:
-        # Directory of interested deleted before os.scandir called.
+    except (FileNotFoundError, PermissionError) as error:
+        # FileNotFoundError: Directory of interested deleted before os.scandir
+        #                    called.
+        # PermissionError: Lacking permissions to read directory of interest.
         # Assume zero size.
         logger.info("Error calling os.scandir({}): {}".format(path, error))
 
