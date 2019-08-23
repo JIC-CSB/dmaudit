@@ -231,6 +231,8 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
     start = time()
 
     click.secho(LOGO, fg="blue")
+    click.secho("dmaudit version   : ", nl=False)
+    click.secho(__version__, fg="green")
     click.secho("Auditing directory: ", nl=False)
     click.secho(directory, fg="green")
 
