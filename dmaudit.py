@@ -14,7 +14,7 @@ import magic
 logger = logging.Logger(__name__)
 
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 LOGO = """     _                           _ _ _
     | |                         | (_) |

@@ -10,8 +10,6 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
-- Version of dmaudit to report
-
 
 Changed
 ^^^^^^^
@@ -28,11 +26,23 @@ Removed
 Fixed
 ^^^^^
 
-- Fix defect when encountering a subdirectory where the user lacks permissions 
-
 
 Security
 ^^^^^^^^
+
+
+[0.4.0] - 2019-08-23
+--------------------
+
+Added
+^^^^^
+
+- Version of dmaudit to report
+
+Fixed
+^^^^^
+
+- Fix defect when encountering a subdirectory where the user lacks permissions 
 
 
 [0.3.0] - 2019-07-15
