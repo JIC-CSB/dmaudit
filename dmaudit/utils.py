@@ -1,45 +1,13 @@
 """Bioinformatics data management audit of a directory tree."""
 
-import datetime
 import json
 import logging
 import os
 
-from operator import attrgetter
-from time import time
 
-import click
 import magic
 
 logger = logging.Logger(__name__)
-
-
-__version__ = "0.4.0"
-
-LOGO = """     _                           _ _ _
-    | |                         | (_) |
-  __| |_ __ ___   __ _ _   _  __| |_| |_
- / _` | '_ ` _ \ / _` | | | |/ _` | | __|
-| (_| | | | | | | (_| | |_| | (_| | | |_
- \__,_|_| |_| |_|\__,_|\__,_|\__,_|_|\__|
-"""  # NOQA
-
-LEVEL_COLORS = [
-    None,
-    "bright_cyan",
-    "bright_magenta",
-    "blue",
-    "magenta",
-    "cyan",
-    "bright_blue",
-]
-
-SORT_LOOKUP = {
-    "size": "size_in_bytes",
-    "mtime": "last_touched",
-    "name": "path",
-    "num_files": "num_files",
-}
 
 
 class DirectoryTreeSummary(object):
@@ -55,21 +23,6 @@ class DirectoryTreeSummary(object):
 
         self.size_in_bytes_text = 0
         self.size_in_bytes_gzip = 0
-
-    def echo(self, check_mimetype):
-        click.secho(sizeof_fmt(self.size_in_bytes) + " ", nl=False)
-
-        if check_mimetype:
-            click.secho(sizeof_fmt(self.size_in_bytes_text) + " ", nl=False)
-            click.secho(sizeof_fmt(self.size_in_bytes_gzip) + " ", nl=False)
-
-        click.secho("{:7d}".format(self.num_files) + " ", nl=False)
-        click.secho(date_fmt(self.last_touched) + " ", nl=False)
-        color_index = self.level % len(LEVEL_COLORS)
-        level_color = LEVEL_COLORS[color_index]
-        if self.level != 0:
-            click.secho("-" * self.level + " ", nl=False, fg=level_color)
-        click.secho(os.path.basename(self.path), fg=level_color)
 
     def update_last_touched(self, timestamp):
         if timestamp > self.last_touched:
@@ -126,20 +79,6 @@ class DirectoryTreeSummary(object):
         return cls.from_dict(json.load(fh))
 
 
-def sizeof_fmt(num, suffix='B'):
-    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
-        if abs(num) < 1024.0:
-            return "{:6.1f}{:3s}".format(num, unit + suffix)
-        num /= 1024.0
-    return "{:6.1f}{:3s}".format(num, "Yi" + suffix)
-
-
-def date_fmt(timestamp):
-    timestamp = float(timestamp)
-    datetime_obj = datetime.datetime.fromtimestamp(timestamp)
-    return datetime_obj.strftime("%Y-%m-%d")
-
-
 def build_tree(path, start_path, target_level, level, check_mimetype=False):
     """Return total size of files in path and subdirs. If
     is_dir() or stat() fails, log the error message
@@ -189,85 +128,3 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
         logger.info("Error calling os.scandir({}): {}".format(path, error))
 
     return directory
-
-
-def print_tree(directory, sort_by, reverse, check_mimetype=False):
-
-    directory.echo(check_mimetype=check_mimetype)
-    sub_dirs_sorted = sorted(
-        directory.subdirectories,
-        key=attrgetter(SORT_LOOKUP[sort_by]),
-        reverse=reverse
-    )
-    for subdir in sub_dirs_sorted:
-        print_tree(subdir, sort_by, reverse, check_mimetype)
-
-
-@click.command()
-@click.version_option(__version__)
-@click.argument(
-    "directory",
-    type=click.Path(exists=True, file_okay=False, resolve_path=True)
-)
-@click.option(
-    "-l", "--level",
-    type=int,
-    default=2,
-    help="Number of levels of nesting to report (default 2)"
-)
-@click.option(
-    "-s", "--sort-by",
-    type=click.Choice(["size", "mtime", "name"]),
-    default="size",
-    help="Parameter to sort by (default size)"
-)
-@click.option("-r", "--reverse", default=False, is_flag=True)
-@click.option(
-    "-m", "--check-mimetype",
-    is_flag=True,
-    default=False,
-    help="Report stats of file mimetypes (can be slow)"
-)
-def dmaudit(directory, level, sort_by, reverse, check_mimetype):
-    start = time()
-
-    click.secho(LOGO, fg="blue")
-    click.secho("dmaudit version   : ", nl=False)
-    click.secho(__version__, fg="green")
-    click.secho("Auditing directory: ", nl=False)
-    click.secho(directory, fg="green")
-
-    directory = build_tree(
-        path=directory,
-        start_path=directory,
-        target_level=level,
-        level=0,
-        check_mimetype=check_mimetype
-    )
-
-    elapsed = time() - start
-    click.secho("Time in seconds   : ", nl=False)
-    click.secho("{:.2f}".format(elapsed), fg="green")
-
-    click.secho("")
-
-    if sort_by == "size":
-        # Want largest object first.
-        reverse = not reverse
-
-    header = "    Total  #files Last write"
-    if check_mimetype:
-        header = "    Total      text      gzip  #files Last write"
-
-    click.secho(header, fg="blue")
-
-    print_tree(
-        directory=directory,
-        sort_by=sort_by,
-        reverse=reverse,
-        check_mimetype=check_mimetype
-    )
-
-
-if __name__ == "__main__":
-    dmaudit()
