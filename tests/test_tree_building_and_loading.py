@@ -2,6 +2,7 @@ import os
 
 from . import DATA_DIR, TREE_DIR
 
+
 def test_tree_building_and_loading():
 
     from dmaudit.utils import build_tree, DirectoryTreeSummary

@@ -1,3 +1,3 @@
 """dmaudit command line interferface."""
 
-from dmaudit.utils import dmaudit
+from dmaudit.utils import dmaudit  # NOQA

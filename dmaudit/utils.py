@@ -237,7 +237,13 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
     click.secho("Auditing directory: ", nl=False)
     click.secho(directory, fg="green")
 
-    directory = build_tree(directory, directory, level, 0, check_mimetype=check_mimetype)
+    directory = build_tree(
+        path=directory,
+        start_path=directory,
+        target_level=level,
+        level=0,
+        check_mimetype=check_mimetype
+    )
 
     elapsed = time() - start
     click.secho("Time in seconds   : ", nl=False)
