@@ -5,6 +5,7 @@ from dmaudit.cli import dmaudit
 
 from . import TREE_DIR
 
+
 def test_dmaudit():
     runner = CliRunner()
     result = runner.invoke(dmaudit, ['-l', '1', TREE_DIR])
