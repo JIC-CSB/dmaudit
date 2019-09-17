@@ -30,6 +30,15 @@ Fixed
 Security
 ^^^^^^^^
 
+[0.5.0] - 2019-09-17
+--------------------
+
+Added
+^^^^^
+
+- Added ability to install package using ``pip3``
+- Added some basic tests
+
 
 [0.4.0] - 2019-08-23
 --------------------
