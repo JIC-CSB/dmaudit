@@ -45,8 +45,8 @@ SORT_LOOKUP = {
 class DirectoryTreeSummary(object):
     """Summary information about a directory tree."""
 
-    def __init__(self, path, level):
-        self.path = path
+    def __init__(self, path, start_path, level):
+        self.path = os.path.relpath(path, start_path)
         self.level = level
         self.size_in_bytes = 0
         self.num_files = 0
@@ -75,7 +75,7 @@ class DirectoryTreeSummary(object):
         if timestamp > self.last_touched:
             self.last_touched = timestamp
 
-    def as_dict(self):
+    def to_dict(self):
         """Return dictionary representation of the directory tree summary."""
         data = {
             "path": self.path,
@@ -88,20 +88,20 @@ class DirectoryTreeSummary(object):
             "subdirectories": [],
         }
         for d in self.subdirectories:
-            data["subdirectories"].append(d.as_dict())
+            data["subdirectories"].append(d.to_dict())
         return data
 
     def to_json(self, fh=None):
         """Return DirectoryTreeSummary as JSON string."""
         if fh is None:
-            json.dumps(self.as_dict(), indent=2)
+            json.dumps(self.to_dict(), indent=2)
         else:
-            json.dumps(self.as_dict(), fh, indent=2)
+            json.dump(self.to_dict(), fh, indent=2)
 
     @classmethod
     def from_dict(cls, data):
         """Return DirectoryTreeSummary from Python dictionary."""
-        dts = cls(data["path"], data["level"])
+        dts = cls(data["path"], ".", data["level"])
         dts.size_in_bytes = data["size_in_bytes"]
         dts.size_in_bytes_text = data["size_in_bytes_text"]
         dts.size_in_bytes_gzip = data["size_in_bytes_gzip"]
@@ -140,12 +140,12 @@ def date_fmt(timestamp):
     return datetime_obj.strftime("%Y-%m-%d")
 
 
-def build_tree(path, target_level, level, check_mimetype=False):
+def build_tree(path, start_path, target_level, level, check_mimetype=False):
     """Return total size of files in path and subdirs. If
     is_dir() or stat() fails, log the error message
     and assume zero size (for example, file has been deleted).
     """
-    directory = DirectoryTreeSummary(path, level)
+    directory = DirectoryTreeSummary(path, start_path, level)
     try:
         for entry in os.scandir(path):
             try:
@@ -156,6 +156,7 @@ def build_tree(path, target_level, level, check_mimetype=False):
             if is_dir:
                 subdir = build_tree(
                     path=entry.path,
+                    start_path=start_path,
                     target_level=target_level,
                     level=level+1,
                     check_mimetype=check_mimetype)
@@ -236,7 +237,7 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
     click.secho("Auditing directory: ", nl=False)
     click.secho(directory, fg="green")
 
-    directory = build_tree(directory, level, 0, check_mimetype=check_mimetype)
+    directory = build_tree(directory, directory, level, 0, check_mimetype=check_mimetype)
 
     elapsed = time() - start
     click.secho("Time in seconds   : ", nl=False)
