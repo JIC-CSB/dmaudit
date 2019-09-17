@@ -17,6 +17,9 @@ setup(
         "click",
         "python-magic",
     ],
+    entry_points={
+        'console_scripts': ['dmaudit=dmaudit.cli:dmaudit'],
+    },
     download_url="{}/tarball/{}".format(url, version),
     license="MIT"
 )
