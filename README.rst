@@ -11,4 +11,4 @@ Installation::
 
 Usage::
 
-    dmaudit /path/to/dir/to/audit
+    dmaudit report /path/to/dir/to/audit
