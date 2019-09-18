@@ -30,6 +30,16 @@ Fixed
 Security
 ^^^^^^^^
 
+
+[0.7.0] - 2019-09-18
+--------------------
+
+Changed
+^^^^^^^
+
+- Replaced python-magic with puremagic to get rid of dependency on libmagic
+
+
 [0.6.0] - 2019-09-18
 --------------------
 
