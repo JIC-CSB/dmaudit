@@ -10,16 +10,9 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
-- Added ``dmaudit report`` subcommand (previously this was the functionality in
-  ``dmaudit`` command)
-- Added ``dmaudit mimetype`` subcommand to be able to test what mimetype
-  dmaudit thinks a file has
-
 
 Changed
 ^^^^^^^
-
-- Command line interface now takes subcommands
 
 
 Deprecated
@@ -36,6 +29,24 @@ Fixed
 
 Security
 ^^^^^^^^
+
+[0.6.0] - 2019-09-18
+--------------------
+
+Added
+^^^^^
+
+- Added ``dmaudit report`` subcommand (previously this was the functionality in
+  ``dmaudit`` command)
+- Added ``dmaudit mimetype`` subcommand to be able to test what mimetype
+  dmaudit thinks a file has
+
+
+Changed
+^^^^^^^
+
+- Command line interface now takes subcommands
+
 
 [0.5.0] - 2019-09-17
 --------------------
