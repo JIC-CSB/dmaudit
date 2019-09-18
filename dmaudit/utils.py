@@ -79,6 +79,11 @@ class DirectoryTreeSummary(object):
         return cls.from_dict(json.load(fh))
 
 
+def get_mimetype(fpath):
+    """Return mimetype of a file."""
+    return magic.from_file(fpath, mime=True)
+
+
 def build_tree(path, start_path, target_level, level, check_mimetype=False):
     """Return total size of files in path and subdirs. If
     is_dir() or stat() fails, log the error message
@@ -113,7 +118,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
                     directory.num_files += 1
                     directory.update_last_touched(stat.st_mtime)
                     if check_mimetype:
-                        mimetype = magic.from_file(entry.path, mime=True)
+                        mimetype = get_mimetype(entry.path)
                         if mimetype.startswith("text"):
                             directory.size_in_bytes_text += stat.st_size
                         elif mimetype == "application/x-gzip":

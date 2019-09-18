@@ -10,9 +10,16 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
+- Added ``dmaudit report`` subcommand (previously this was the functionality in
+  ``dmaudit`` command)
+- Added ``dmaudit mimetype`` subcommand to be able to test what mimetype
+  dmaudit thinks a file has
+
 
 Changed
 ^^^^^^^
+
+- Command line interface now takes subcommands
 
 
 Deprecated

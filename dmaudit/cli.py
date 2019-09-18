@@ -1,4 +1,4 @@
-"""dmaudit command line interferface."""
+"""dmaudit command line interface."""
 
 import os
 import datetime
@@ -9,7 +9,7 @@ from operator import attrgetter
 import click
 
 from dmaudit import __version__
-from dmaudit.utils import build_tree
+from dmaudit.utils import build_tree, get_mimetype
 
 
 LOGO = """     _                           _ _ _
@@ -80,8 +80,13 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
         print_tree(subdir, sort_by, reverse, check_mimetype)
 
 
-@click.command()
+@click.group()
 @click.version_option(__version__)
+def dmaudit():
+    """Data management audit tool."""
+
+
+@dmaudit.command()
 @click.argument(
     "directory",
     type=click.Path(exists=True, file_okay=False, resolve_path=True)
@@ -105,7 +110,8 @@ def print_tree(directory, sort_by, reverse, check_mimetype=False):
     default=False,
     help="Report stats of file mimetypes (can be slow)"
 )
-def dmaudit(directory, level, sort_by, reverse, check_mimetype):
+def report(directory, level, sort_by, reverse, check_mimetype):
+    """Generate data management audit report."""
     start = time()
 
     click.secho(LOGO, fg="blue")
@@ -144,3 +150,14 @@ def dmaudit(directory, level, sort_by, reverse, check_mimetype):
         reverse=reverse,
         check_mimetype=check_mimetype
     )
+
+
+@dmaudit.command()
+@click.version_option(__version__)
+@click.argument(
+    "input_file",
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True)
+)
+def mimetype(input_file):
+    """Print the perceived file mimetype."""
+    click.secho(get_mimetype(input_file))

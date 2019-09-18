@@ -1,14 +1,16 @@
 """Test the dmaudit command line tool."""
 
+import os
+
 from click.testing import CliRunner
 from dmaudit.cli import dmaudit
 
-from . import TREE_DIR
+from . import TREE_DIR, DATA_DIR
 
 
-def test_dmaudit():
+def test_dmaudit_report():
     runner = CliRunner()
-    result = runner.invoke(dmaudit, ['-l', '1', TREE_DIR])
+    result = runner.invoke(dmaudit, ['report', '-l', '1', TREE_DIR])
 
     assert result.exit_code == 0
 
@@ -19,3 +21,14 @@ def test_dmaudit():
     assert result.output.find(" 108.0B         9 2019-09-17 - l1_d1") != -1
 
     assert len(result.output.split("\n")) == 17
+
+
+def test_dmaudit_mimetype():
+    runner = CliRunner()
+
+    fpath = os.path.join(DATA_DIR, "tree_l1.json")
+    result = runner.invoke(dmaudit, ['mimetype', fpath])
+
+    assert result.exit_code == 0
+
+    assert result.output.strip() == "text/plain"
