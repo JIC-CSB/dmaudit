@@ -4,6 +4,7 @@
 
 *.egg-info
 
+dist
 .cache
 .coverage
 __pycache__
