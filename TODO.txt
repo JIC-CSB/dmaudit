@@ -1,7 +1,7 @@
-- Split generation of tree and printing of tree into separate files because we
-  will want to generate other representations of the tree
 - Build plugin system for finding files of interest (sam, fastq, bam, etc)
 
+- DONE: Split generation of tree and printing of tree into separate files because we
+  will want to generate other representations of the tree
 - DONE: Add command line options to specify target_level
 - DONE: Switch to click and add colour coding
 - DONE: Add to_json and from_json to Directory class
