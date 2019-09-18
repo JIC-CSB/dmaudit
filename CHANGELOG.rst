@@ -31,6 +31,15 @@ Security
 ^^^^^^^^
 
 
+[0.7.1] - 2019-09-18
+--------------------
+
+Fixed
+^^^^^
+
+- Fixed bug where an empty file caused the mimetype evaluation to crash the tool
+
+
 [0.7.0] - 2019-09-18
 --------------------
 

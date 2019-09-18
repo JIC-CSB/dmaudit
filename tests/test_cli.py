@@ -32,3 +32,14 @@ def test_dmaudit_mimetype():
     assert result.exit_code == 0
 
     assert result.output.strip() == "application/x-gzip"
+
+
+def test_dmaudit_mimetype_on_empty_file():
+    runner = CliRunner()
+
+    fpath = os.path.join(DATA_DIR, "empty.txt")
+    result = runner.invoke(dmaudit, ['mimetype', fpath])
+
+    assert result.exit_code == 0
+
+    assert result.output.strip() == "application/octet-stream"

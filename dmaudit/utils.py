@@ -81,7 +81,10 @@ class DirectoryTreeSummary(object):
 
 def get_mimetype(fpath):
     """Return mimetype of a file."""
-    possibilities = puremagic.magic_file(fpath)
+    try:
+        possibilities = puremagic.magic_file(fpath)
+    except ValueError:  # File is empty.
+        return "application/octet-stream"
     if len(possibilities) > 0:
         return possibilities[0].mime_type
     else:
