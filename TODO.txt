@@ -1,3 +1,4 @@
+- Change output of -m from gzipped column to compressed column and include more compressed formats
 - Build plugin system for finding files of interest (sam, fastq, bam, etc)
 
 - DONE: Split generation of tree and printing of tree into separate files because we
