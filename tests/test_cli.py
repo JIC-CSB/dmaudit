@@ -26,9 +26,9 @@ def test_dmaudit_report():
 def test_dmaudit_mimetype():
     runner = CliRunner()
 
-    fpath = os.path.join(DATA_DIR, "tree_l1.json")
+    fpath = os.path.join(DATA_DIR, "tree.tar.gz")
     result = runner.invoke(dmaudit, ['mimetype', fpath])
 
     assert result.exit_code == 0
 
-    assert result.output.strip() == "text/plain"
+    assert result.output.strip() == "application/x-gzip"
