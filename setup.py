@@ -15,7 +15,7 @@ setup(
     url=url,
     install_requires=[
         "click",
-        "python-magic",
+        "puremagic",
     ],
     entry_points={
         'console_scripts': ['dmaudit=dmaudit.cli:dmaudit'],

@@ -5,7 +5,7 @@ import logging
 import os
 
 
-import magic
+import puremagic
 
 logger = logging.Logger(__name__)
 
@@ -81,7 +81,11 @@ class DirectoryTreeSummary(object):
 
 def get_mimetype(fpath):
     """Return mimetype of a file."""
-    return magic.from_file(fpath, mime=True)
+    possibilities = puremagic.magic_file(fpath)
+    if len(possibilities) > 0:
+        return possibilities[0].mime_type
+    else:
+        return "application/octet-stream"
 
 
 def build_tree(path, start_path, target_level, level, check_mimetype=False):
