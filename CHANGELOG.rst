@@ -15,6 +15,8 @@ Changed
 ^^^^^^^
 
 - Output of ``dmaudit report -m`` now reports percentage compressed
+- Output of ``dmaudit mimetype`` now reports if the mimetype represents a
+  compressed file format
 
 
 Deprecated

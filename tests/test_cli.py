@@ -31,7 +31,7 @@ def test_dmaudit_mimetype():
 
     assert result.exit_code == 0
 
-    assert result.output.strip() == "application/x-gzip"
+    assert result.output.strip() == "application/x-gzip compressed=True"
 
 
 def test_dmaudit_mimetype_on_empty_file():
@@ -42,4 +42,4 @@ def test_dmaudit_mimetype_on_empty_file():
 
     assert result.exit_code == 0
 
-    assert result.output.strip() == "unknown/unknown"
+    assert result.output.strip() == "unknown/unknown compressed=False"

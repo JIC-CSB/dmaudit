@@ -9,7 +9,7 @@ from operator import attrgetter
 import click
 
 from dmaudit import __version__
-from dmaudit.utils import build_tree, get_mimetype
+from dmaudit.utils import build_tree, get_mimetype, is_compressed
 
 
 LOGO = """     _                           _ _ _
@@ -176,5 +176,7 @@ def report(directory, level, sort_by, reverse, check_mimetype):
     type=click.Path(exists=True, dir_okay=False, resolve_path=True)
 )
 def mimetype(input_file):
-    """Print the perceived file mimetype."""
-    click.secho(get_mimetype(input_file))
+    """Print the perceived file mimetype and if it is considered 'compressed'."""
+    m = get_mimetype(input_file)
+    c = is_compressed(m)
+    click.secho("{} compressed={}".format(m, c))
