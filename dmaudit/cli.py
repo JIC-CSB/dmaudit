@@ -56,8 +56,22 @@ def echo(tree, check_mimetype):
     click.secho(sizeof_fmt(tree.size_in_bytes) + " ", nl=False)
 
     if check_mimetype:
-        click.secho(sizeof_fmt(tree.size_in_bytes_text) + " ", nl=False)
-        click.secho(sizeof_fmt(tree.size_in_bytes_gzip) + " ", nl=False)
+        if tree.size_in_bytes != 0:
+            percentage_zipped = 100 * (tree.size_in_bytes_compressed / tree.size_in_bytes)  # NOQA
+
+            color = "red"
+            if percentage_zipped > 33.0:
+                color = "yellow"
+            if percentage_zipped > 67.0:
+                color = "green"
+
+            click.secho(
+                "     {:>5.1f}% ".format(percentage_zipped),
+                fg=color,
+                nl=False
+            )
+        else:
+            click.secho("         NA ", nl=False)
 
     click.secho("{:7d}".format(tree.num_files) + " ", nl=False)
     click.secho(date_fmt(tree.last_touched) + " ", nl=False)
@@ -140,7 +154,7 @@ def report(directory, level, sort_by, reverse, check_mimetype):
 
     header = "    Total  #files Last write"
     if check_mimetype:
-        header = "    Total      text      gzip  #files Last write"
+        header = "    Total  Compressed  #Files Last write"
 
     click.secho(header, fg="blue")
 
@@ -150,6 +164,9 @@ def report(directory, level, sort_by, reverse, check_mimetype):
         reverse=reverse,
         check_mimetype=check_mimetype
     )
+
+    with open("tree.json", "w") as fh:
+        directory.to_json(fh)
 
 
 @dmaudit.command()

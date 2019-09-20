@@ -42,4 +42,4 @@ def test_dmaudit_mimetype_on_empty_file():
 
     assert result.exit_code == 0
 
-    assert result.output.strip() == "application/octet-stream"
+    assert result.output.strip() == "unknown/unknown"

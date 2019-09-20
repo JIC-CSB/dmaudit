@@ -14,6 +14,8 @@ Added
 Changed
 ^^^^^^^
 
+- Output of ``dmaudit report -m`` now reports percentage compressed
+
 
 Deprecated
 ^^^^^^^^^^

@@ -9,6 +9,46 @@ import puremagic
 
 logger = logging.Logger(__name__)
 
+COMPRESSED_MIMETYPES = set([
+    "application/x-bzip2",
+    "application/x-gzip",
+    "application/x-lzip",
+    "application/x-lzma",
+    "application/x-lzop",
+    "application/x-snappy-framed",
+    "application/x-xz",
+    "application/x-compress",
+    "application/x-7z-compressed",
+    "application/x-ace-compressed",
+    "application/x-astrotite-afa",
+    "application/x-alz-compressed",
+    "application/vnd.android.package-archive",
+    "application/octet-stream",
+    "application/x-freearc",
+    "application/x-arj",
+    "application/x-b1",
+    "application/vnd.ms-cab-compressed",
+    "application/x-cfs-compressed",
+    "application/x-dar",
+    "application/x-dgc-compressed",
+    "application/x-apple-diskimage",
+    "application/x-gca-compressed",
+    "application/java-archive",
+    "application/x-lzh",
+    "application/x-lzx",
+    "application/x-rar-compressed",
+    "application/x-stuffit",
+    "application/x-gtar",
+    "application/x-ms-wim",
+    "application/x-xar",
+    "application/zip",
+    "application/x-zoo"
+])
+
+
+def is_compressed(mimetype):
+    return mimetype in COMPRESSED_MIMETYPES
+
 
 class DirectoryTreeSummary(object):
     """Summary information about a directory tree."""
@@ -22,7 +62,7 @@ class DirectoryTreeSummary(object):
         self.subdirectories = []
 
         self.size_in_bytes_text = 0
-        self.size_in_bytes_gzip = 0
+        self.size_in_bytes_compressed = 0
 
     def update_last_touched(self, timestamp):
         if timestamp > self.last_touched:
@@ -35,7 +75,7 @@ class DirectoryTreeSummary(object):
             "level": self.level,
             "size_in_bytes": self.size_in_bytes,
             "size_in_bytes_text": self.size_in_bytes_text,
-            "size_in_bytes_gzip": self.size_in_bytes_gzip,
+            "size_in_bytes_compressed": self.size_in_bytes_compressed,
             "num_files": self.num_files,
             "last_touched": self.last_touched,
             "subdirectories": [],
@@ -56,8 +96,7 @@ class DirectoryTreeSummary(object):
         """Return DirectoryTreeSummary from Python dictionary."""
         dts = cls(data["path"], ".", data["level"])
         dts.size_in_bytes = data["size_in_bytes"]
-        dts.size_in_bytes_text = data["size_in_bytes_text"]
-        dts.size_in_bytes_gzip = data["size_in_bytes_gzip"]
+        dts.size_in_bytes_compressed = data["size_in_bytes_compressed"]
         dts.num_files = data["num_files"]
         dts.last_touched = data["last_touched"]
 
@@ -84,11 +123,11 @@ def get_mimetype(fpath):
     try:
         possibilities = puremagic.magic_file(fpath)
     except ValueError:  # File is empty.
-        return "application/octet-stream"
+        return "unknown/unknown"
     if len(possibilities) > 0:
         return possibilities[0].mime_type
     else:
-        return "application/octet-stream"
+        return "unknown/unknown"
 
 
 def build_tree(path, start_path, target_level, level, check_mimetype=False):
@@ -114,8 +153,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
                 if level < target_level:
                     directory.subdirectories.append(subdir)
                 directory.size_in_bytes += subdir.size_in_bytes
-                directory.size_in_bytes_text += subdir.size_in_bytes_text
-                directory.size_in_bytes_gzip += subdir.size_in_bytes_gzip
+                directory.size_in_bytes_compressed += subdir.size_in_bytes_compressed  # NOQA
                 directory.num_files += subdir.num_files
                 directory.update_last_touched(subdir.last_touched)
             else:
@@ -126,10 +164,8 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
                     directory.update_last_touched(stat.st_mtime)
                     if check_mimetype:
                         mimetype = get_mimetype(entry.path)
-                        if mimetype.startswith("text"):
-                            directory.size_in_bytes_text += stat.st_size
-                        elif mimetype == "application/x-gzip":
-                            directory.size_in_bytes_gzip += stat.st_size
+                        if is_compressed(mimetype):
+                            directory.size_in_bytes_compressed += stat.st_size
                 except OSError as error:
                     logger.info('Error calling stat(): {}'.format(error))
     except (FileNotFoundError, PermissionError) as error:
