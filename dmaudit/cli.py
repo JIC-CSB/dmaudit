@@ -176,7 +176,7 @@ def report(directory, level, sort_by, reverse, check_mimetype):
     type=click.Path(exists=True, dir_okay=False, resolve_path=True)
 )
 def mimetype(input_file):
-    """Print the perceived file mimetype and if it is considered 'compressed'."""
+    """Print the perceived mimetype and if it is 'compressed'."""
     m = get_mimetype(input_file)
     c = is_compressed(m)
     click.secho("{} compressed={}".format(m, c))
