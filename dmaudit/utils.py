@@ -2,6 +2,7 @@
 
 import json
 import logging
+import multiprocessing
 import os
 
 
@@ -177,13 +178,42 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
     return directory
 
 
-def merge_trees(relpath, level, t1, t2):
+def add_subtree(tree, subtree):
     """Return merged tree."""
-    mtree = DirectoryTreeSummary(relpath, level)
-    mtree.size_in_bytes = t1.size_in_bytes + t2.size_in_bytes
-    mtree.num_files = t1.num_files + t2.num_files
-    mtree.size_in_bytes_compressed = t1.size_in_bytes_compressed + t2.size_in_bytes_compressed  # NOQA
-    mtree.last_touched = max(t1.last_touched, t2.last_touched)
-    mtree.subdirectories.append(t1)
-    mtree.subdirectories.append(t2)
-    return mtree
+    tree.size_in_bytes = tree.size_in_bytes + subtree.size_in_bytes
+    tree.num_files = tree.num_files + subtree.num_files
+    tree.size_in_bytes_compressed = tree.size_in_bytes_compressed + subtree.size_in_bytes_compressed  # NOQA
+    if tree.last_touched < subtree.last_touched:
+        tree.last_touched = subtree.last_touched
+    tree.subdirectories.append(subtree)
+
+
+def build_tree_multiprocessing(path, start_path, target_level, level, check_mimetype):
+    jobs = []
+    try:
+        for entry in os.scandir(path):
+            try:
+                is_dir = entry.is_dir(follow_symlinks=False)
+            except OSError as error:
+                logger.info('Error calling is_dir(): {}'.format(error))
+                continue
+            if is_dir:
+                j = (
+                    entry.path,
+                    start_path,
+                    target_level,
+                    1,
+                    check_mimetype
+                )
+                jobs.append(j)
+    except (FileNotFoundError, PermissionError) as error:
+        logger.info("Error calling os.scandir({}): {}".format(path, error))
+
+
+
+    tree = DirectoryTreeSummary(".", 0)
+    with multiprocessing.Pool(processes=4) as p:
+        for subtree in p.starmap(build_tree, jobs):
+            add_subtree(tree, subtree)
+
+    return tree

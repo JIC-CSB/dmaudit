@@ -1,7 +1,9 @@
 """Test merging of trees."""
 
-def test_tree_merge():
-    from dmaudit.utils import DirectoryTreeSummary, merge_trees
+def test_tree_add_subtree():
+    from dmaudit.utils import DirectoryTreeSummary, add_subtree
+
+    tree = DirectoryTreeSummary(".", 0)
 
     tree_1 = DirectoryTreeSummary("dir1", 1)
     tree_2 = DirectoryTreeSummary("dir2", 1)
@@ -16,7 +18,8 @@ def test_tree_merge():
     tree_2.last_touched = 1400000000
     tree_2.size_in_bytes_compressed = 16
 
-    tree = merge_trees(".", 0, tree_1, tree_2)
+    add_subtree(tree, tree_1)
+    add_subtree(tree, tree_2)
     assert isinstance(tree, DirectoryTreeSummary)
 
     assert tree.size_in_bytes == 75

@@ -9,7 +9,7 @@ from operator import attrgetter
 import click
 
 from dmaudit import __version__
-from dmaudit.utils import build_tree, get_mimetype, is_compressed
+from dmaudit.utils import build_tree, get_mimetype, is_compressed, build_tree_multiprocessing
 
 
 LOGO = """     _                           _ _ _
@@ -135,6 +135,75 @@ def report(directory, level, sort_by, reverse, check_mimetype):
     click.secho(directory, fg="green")
 
     directory = build_tree(
+        path=directory,
+        start_path=directory,
+        target_level=level,
+        level=0,
+        check_mimetype=check_mimetype
+    )
+
+    elapsed = time() - start
+    click.secho("Time in seconds   : ", nl=False)
+    click.secho("{:.2f}".format(elapsed), fg="green")
+
+    click.secho("")
+
+    if sort_by == "size":
+        # Want largest object first.
+        reverse = not reverse
+
+    header = "    Total  #files Last write"
+    if check_mimetype:
+        header = "    Total  Compressed  #Files Last write"
+
+    click.secho(header, fg="blue")
+
+    print_tree(
+        directory=directory,
+        sort_by=sort_by,
+        reverse=reverse,
+        check_mimetype=check_mimetype
+    )
+
+    with open("tree.json", "w") as fh:
+        directory.to_json(fh)
+
+
+@dmaudit.command()
+@click.argument(
+    "directory",
+    type=click.Path(exists=True, file_okay=False, resolve_path=True)
+)
+@click.option(
+    "-l", "--level",
+    type=int,
+    default=2,
+    help="Number of levels of nesting to report (default 2)"
+)
+@click.option(
+    "-s", "--sort-by",
+    type=click.Choice(["size", "mtime", "name"]),
+    default="size",
+    help="Parameter to sort by (default size)"
+)
+@click.option("-r", "--reverse", default=False, is_flag=True)
+@click.option(
+    "-m", "--check-mimetype",
+    is_flag=True,
+    default=False,
+    help="Report stats of file mimetypes (can be slow)"
+)
+def mreport(directory, level, sort_by, reverse, check_mimetype):
+    """Generate data management audit report."""
+    start = time()
+
+    click.secho(LOGO, fg="blue")
+    click.secho("dmaudit version   : ", nl=False)
+    click.secho(__version__, fg="green")
+    click.secho("Auditing directory: ", nl=False)
+    click.secho(directory, fg="green")
+
+    directory = build_tree_multiprocessing(
         path=directory,
         start_path=directory,
         target_level=level,
