@@ -53,8 +53,9 @@ def is_compressed(mimetype):
 class DirectoryTreeSummary(object):
     """Summary information about a directory tree."""
 
-    def __init__(self, path, start_path, level):
-        self.relpath = os.path.relpath(path, start_path)
+    def __init__(self, relpath, level):
+#       self.relpath = os.path.relpath(path, start_path)
+        self.relpath = relpath
         self.level = level
         self.size_in_bytes = 0
         self.num_files = 0
@@ -94,7 +95,7 @@ class DirectoryTreeSummary(object):
     @classmethod
     def from_dict(cls, data):
         """Return DirectoryTreeSummary from Python dictionary."""
-        dts = cls(data["path"], ".", data["level"])
+        dts = cls(data["path"],  data["level"])
         dts.size_in_bytes = data["size_in_bytes"]
         dts.size_in_bytes_compressed = data["size_in_bytes_compressed"]
         dts.num_files = data["num_files"]
@@ -135,7 +136,8 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
     is_dir() or stat() fails, log the error message
     and assume zero size (for example, file has been deleted).
     """
-    directory = DirectoryTreeSummary(path, start_path, level)
+    relpath = os.path.relpath(path, start_path)
+    directory = DirectoryTreeSummary(relpath, level)
     try:
         for entry in os.scandir(path):
             try:
