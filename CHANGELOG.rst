@@ -14,6 +14,8 @@ Added
 Changed
 ^^^^^^^
 
+- Added ``-p/--processes`` option to ``dmaudit report`` to parallelise
+  building of tree at the top level
 - Output of ``dmaudit report -m`` now reports percentage compressed
 - Output of ``dmaudit mimetype`` now reports if the mimetype represents a
   compressed file format
