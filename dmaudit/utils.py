@@ -193,7 +193,8 @@ def build_tree_multiprocessing(
     start_path,
     target_level,
     level,
-    check_mimetype
+    check_mimetype,
+    processes
 ):
     jobs = []
     try:
@@ -216,7 +217,7 @@ def build_tree_multiprocessing(
         logger.info("Error calling os.scandir({}): {}".format(path, error))
 
     tree = DirectoryTreeSummary(".", 0)
-    with multiprocessing.Pool(processes=4) as p:
+    with multiprocessing.Pool(processes=processes) as p:
         for subtree in p.starmap(build_tree, jobs):
             add_subtree(tree, subtree)
 
