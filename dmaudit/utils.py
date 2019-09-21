@@ -62,7 +62,6 @@ class DirectoryTreeSummary(object):
         self.last_touched = 0
         self.subdirectories = []
 
-        self.size_in_bytes_text = 0
         self.size_in_bytes_compressed = 0
 
     def update_last_touched(self, timestamp):
@@ -75,7 +74,6 @@ class DirectoryTreeSummary(object):
             "relpath": self.relpath,
             "level": self.level,
             "size_in_bytes": self.size_in_bytes,
-            "size_in_bytes_text": self.size_in_bytes_text,
             "size_in_bytes_compressed": self.size_in_bytes_compressed,
             "num_files": self.num_files,
             "last_touched": self.last_touched,
