@@ -1,5 +1,6 @@
 """Test merging of trees."""
 
+
 def test_tree_add_subtree():
     from dmaudit.utils import DirectoryTreeSummary, add_subtree
 

@@ -188,7 +188,13 @@ def add_subtree(tree, subtree):
     tree.subdirectories.append(subtree)
 
 
-def build_tree_multiprocessing(path, start_path, target_level, level, check_mimetype):
+def build_tree_multiprocessing(
+    path,
+    start_path,
+    target_level,
+    level,
+    check_mimetype
+):
     jobs = []
     try:
         for entry in os.scandir(path):
@@ -208,8 +214,6 @@ def build_tree_multiprocessing(path, start_path, target_level, level, check_mime
                 jobs.append(j)
     except (FileNotFoundError, PermissionError) as error:
         logger.info("Error calling os.scandir({}): {}".format(path, error))
-
-
 
     tree = DirectoryTreeSummary(".", 0)
     with multiprocessing.Pool(processes=4) as p:

@@ -9,7 +9,12 @@ from operator import attrgetter
 import click
 
 from dmaudit import __version__
-from dmaudit.utils import build_tree, get_mimetype, is_compressed, build_tree_multiprocessing
+from dmaudit.utils import (
+    build_tree,
+    build_tree_multiprocessing,
+    get_mimetype,
+    is_compressed,
+)
 
 
 LOGO = """     _                           _ _ _
