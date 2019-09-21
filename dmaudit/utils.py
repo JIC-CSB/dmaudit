@@ -54,7 +54,6 @@ class DirectoryTreeSummary(object):
     """Summary information about a directory tree."""
 
     def __init__(self, relpath, level):
-#       self.relpath = os.path.relpath(path, start_path)
         self.relpath = relpath
         self.level = level
         self.size_in_bytes = 0
@@ -178,5 +177,13 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
     return directory
 
 
-def merge_trees(t1, t2):
+def merge_trees(relpath, level, t1, t2):
     """Return merged tree."""
+    mtree = DirectoryTreeSummary(relpath, level)
+    mtree.size_in_bytes = t1.size_in_bytes + t2.size_in_bytes
+    mtree.num_files = t1.num_files + t2.num_files
+    mtree.size_in_bytes_compressed = t1.size_in_bytes_compressed + t2.size_in_bytes_compressed  # NOQA
+    mtree.last_touched = max(t1.last_touched, t2.last_touched)
+    mtree.subdirectories.append(t1)
+    mtree.subdirectories.append(t2)
+    return mtree
