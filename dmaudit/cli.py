@@ -33,7 +33,7 @@ LEVEL_COLORS = [
 SORT_LOOKUP = {
     "size": "size_in_bytes",
     "mtime": "last_touched",
-    "name": "path",
+    "name": "relpath",
     "num_files": "num_files",
 }
 
@@ -79,7 +79,7 @@ def echo(tree, check_mimetype):
     level_color = LEVEL_COLORS[color_index]
     if tree.level != 0:
         click.secho("-" * tree.level + " ", nl=False, fg=level_color)
-    click.secho(os.path.basename(tree.path), fg=level_color)
+    click.secho(os.path.basename(tree.relpath), fg=level_color)
 
 
 def print_tree(directory, sort_by, reverse, check_mimetype=False):

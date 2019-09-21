@@ -54,7 +54,7 @@ class DirectoryTreeSummary(object):
     """Summary information about a directory tree."""
 
     def __init__(self, path, start_path, level):
-        self.path = os.path.relpath(path, start_path)
+        self.relpath = os.path.relpath(path, start_path)
         self.level = level
         self.size_in_bytes = 0
         self.num_files = 0
@@ -71,7 +71,7 @@ class DirectoryTreeSummary(object):
     def to_dict(self):
         """Return dictionary representation of the directory tree summary."""
         data = {
-            "path": self.path,
+            "relpath": self.relpath,
             "level": self.level,
             "size_in_bytes": self.size_in_bytes,
             "size_in_bytes_text": self.size_in_bytes_text,
@@ -176,3 +176,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
         logger.info("Error calling os.scandir({}): {}".format(path, error))
 
     return directory
+
+
+def merge_trees(t1, t2):
+    """Return merged tree."""
