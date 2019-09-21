@@ -135,7 +135,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
     and assume zero size (for example, file has been deleted).
     """
     relpath = os.path.relpath(path, start_path)
-    directory = DirectoryTreeSummary(relpath, level)
+    tree = DirectoryTreeSummary(relpath, level)
     try:
         for entry in os.scandir(path):
             try:
@@ -144,28 +144,28 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
                 logger.info('Error calling is_dir(): {}'.format(error))
                 continue
             if is_dir:
-                subdir = build_tree(
+                subtree = build_tree(
                     path=entry.path,
                     start_path=start_path,
                     target_level=target_level,
                     level=level+1,
                     check_mimetype=check_mimetype)
                 if level < target_level:
-                    directory.subdirectories.append(subdir)
-                directory.size_in_bytes += subdir.size_in_bytes
-                directory.size_in_bytes_compressed += subdir.size_in_bytes_compressed  # NOQA
-                directory.num_files += subdir.num_files
-                directory.update_last_touched(subdir.last_touched)
+                    tree.subdirectories.append(subtree)
+                tree.size_in_bytes += subtree.size_in_bytes
+                tree.size_in_bytes_compressed += subtree.size_in_bytes_compressed  # NOQA
+                tree.num_files += subtree.num_files
+                tree.update_last_touched(subtree.last_touched)
             else:
                 try:
                     stat = entry.stat(follow_symlinks=False)
-                    directory.size_in_bytes += stat.st_size
-                    directory.num_files += 1
-                    directory.update_last_touched(stat.st_mtime)
+                    tree.size_in_bytes += stat.st_size
+                    tree.num_files += 1
+                    tree.update_last_touched(stat.st_mtime)
                     if check_mimetype:
                         mimetype = get_mimetype(entry.path)
                         if is_compressed(mimetype):
-                            directory.size_in_bytes_compressed += stat.st_size
+                            tree.size_in_bytes_compressed += stat.st_size
                 except OSError as error:
                     logger.info('Error calling stat(): {}'.format(error))
     except (FileNotFoundError, PermissionError) as error:
@@ -175,7 +175,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
         # Assume zero size.
         logger.info("Error calling os.scandir({}): {}".format(path, error))
 
-    return directory
+    return tree
 
 
 def add_subtree(tree, subtree):

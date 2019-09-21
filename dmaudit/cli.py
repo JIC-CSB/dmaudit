@@ -87,11 +87,11 @@ def echo(tree, check_mimetype):
     click.secho(os.path.basename(tree.relpath), fg=level_color)
 
 
-def print_tree(directory, sort_by, reverse, check_mimetype=False):
+def print_tree(tree, sort_by, reverse, check_mimetype=False):
 
-    echo(directory, check_mimetype=check_mimetype)
+    echo(tree, check_mimetype=check_mimetype)
     sub_dirs_sorted = sorted(
-        directory.subdirectories,
+        tree.subdirectories,
         key=attrgetter(SORT_LOOKUP[sort_by]),
         reverse=reverse
     )
@@ -146,7 +146,7 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
     click.secho(directory, fg="green")
 
     if processes is None:
-        directory = build_tree(
+        tree = build_tree(
             path=directory,
             start_path=directory,
             target_level=level,
@@ -154,7 +154,7 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
             check_mimetype=check_mimetype
         )
     else:
-        directory = build_tree_multiprocessing(
+        tree = build_tree_multiprocessing(
             path=directory,
             start_path=directory,
             target_level=level,
@@ -180,7 +180,7 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
     click.secho(header, fg="blue")
 
     print_tree(
-        directory=directory,
+        tree=tree,
         sort_by=sort_by,
         reverse=reverse,
         check_mimetype=check_mimetype
