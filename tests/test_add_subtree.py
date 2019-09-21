@@ -28,5 +28,5 @@ def test_tree_add_subtree():
     assert tree.last_touched == 1500000000
     assert tree.size_in_bytes_compressed == 30
 
-    assert tree_1 in tree.subdirectories
-    assert tree_2 in tree.subdirectories
+    assert tree_1 in tree.subtrees
+    assert tree_2 in tree.subtrees

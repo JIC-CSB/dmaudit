@@ -91,7 +91,7 @@ def print_tree(tree, sort_by, reverse, check_mimetype=False):
 
     echo(tree, check_mimetype=check_mimetype)
     sub_dirs_sorted = sorted(
-        tree.subdirectories,
+        tree.subtrees,
         key=attrgetter(SORT_LOOKUP[sort_by]),
         reverse=reverse
     )
@@ -185,6 +185,9 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
         reverse=reverse,
         check_mimetype=check_mimetype
     )
+
+    with open("tree.json", "w") as fh:
+        tree.to_json(fh)
 
 
 @dmaudit.command()

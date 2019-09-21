@@ -60,7 +60,7 @@ class DirectoryTreeSummary(object):
         self.size_in_bytes = 0
         self.num_files = 0
         self.last_touched = 0
-        self.subdirectories = []
+        self.subtrees = []
 
         self.size_in_bytes_compressed = 0
 
@@ -77,10 +77,10 @@ class DirectoryTreeSummary(object):
             "size_in_bytes_compressed": self.size_in_bytes_compressed,
             "num_files": self.num_files,
             "last_touched": self.last_touched,
-            "subdirectories": [],
+            "subtrees": [],
         }
-        for d in self.subdirectories:
-            data["subdirectories"].append(d.to_dict())
+        for d in self.subtrees:
+            data["subtrees"].append(d.to_dict())
         return data
 
     def to_json(self, fh=None):
@@ -93,16 +93,16 @@ class DirectoryTreeSummary(object):
     @classmethod
     def from_dict(cls, data):
         """Return DirectoryTreeSummary from Python dictionary."""
-        dts = cls(data["path"],  data["level"])
+        dts = cls(data["relpath"],  data["level"])
         dts.size_in_bytes = data["size_in_bytes"]
         dts.size_in_bytes_compressed = data["size_in_bytes_compressed"]
         dts.num_files = data["num_files"]
         dts.last_touched = data["last_touched"]
 
-        dts.subdirectories = []
+        dts.subtrees = []
 
-        for subdir in data["subdirectories"]:
-            dts.subdirectories.append(cls.from_dict(subdir))
+        for subtree in data["subtrees"]:
+            dts.subtrees.append(cls.from_dict(subtree))
 
         return dts
 
@@ -151,7 +151,7 @@ def build_tree(path, start_path, target_level, level, check_mimetype=False):
                     level=level+1,
                     check_mimetype=check_mimetype)
                 if level < target_level:
-                    tree.subdirectories.append(subtree)
+                    tree.subtrees.append(subtree)
                 tree.size_in_bytes += subtree.size_in_bytes
                 tree.size_in_bytes_compressed += subtree.size_in_bytes_compressed  # NOQA
                 tree.num_files += subtree.num_files
@@ -185,7 +185,7 @@ def add_subtree(tree, subtree):
     tree.size_in_bytes_compressed = tree.size_in_bytes_compressed + subtree.size_in_bytes_compressed  # NOQA
     if tree.last_touched < subtree.last_touched:
         tree.last_touched = subtree.last_touched
-    tree.subdirectories.append(subtree)
+    tree.subtrees.append(subtree)
 
 
 def build_tree_multiprocessing(
