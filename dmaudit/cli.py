@@ -186,9 +186,6 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
         check_mimetype=check_mimetype
     )
 
-    with open("tree.json", "w") as fh:
-        directory.to_json(fh)
-
 
 @dmaudit.command()
 @click.version_option(__version__)
