@@ -10,6 +10,7 @@ import click
 
 from dmaudit import __version__
 from dmaudit.utils import (
+    DirectoryTreeSummary,
     build_tree,
     build_tree_multiprocessing,
     get_mimetype,
@@ -107,8 +108,8 @@ def dmaudit():
 
 @dmaudit.command()
 @click.argument(
-    "directory",
-    type=click.Path(exists=True, file_okay=False, resolve_path=True)
+    "input_source",
+    type=click.Path(exists=True, resolve_path=True)
 )
 @click.option(
     "-l", "--level",
@@ -135,36 +136,48 @@ def dmaudit():
     default=None,
     help="Number of processes to launch when building tree"
 )
-def report(directory, level, sort_by, reverse, check_mimetype, processes):
+@click.option(
+    "-j", "--json-output-file",
+    type=click.Path(exists=False, dir_okay=False, resolve_path=True),
+    default=None,
+    help="Name of json output file"
+)
+def report(input_source, level, sort_by, reverse, check_mimetype, processes, json_output_file):  # NOQA
     """Generate data management audit report."""
     start = time()
 
     click.secho(LOGO, fg="blue")
-    click.secho("dmaudit version   : ", nl=False)
+    click.secho("dmaudit version: ", nl=False)
     click.secho(__version__, fg="green")
-    click.secho("Auditing directory: ", nl=False)
-    click.secho(directory, fg="green")
+    click.secho("Auditing       : ", nl=False)
+    click.secho(input_source, fg="green")
 
-    if processes is None:
-        tree = build_tree(
-            path=directory,
-            start_path=directory,
-            target_level=level,
-            level=0,
-            check_mimetype=check_mimetype
-        )
+    tree = None
+    if os.path.isdir(input_source):
+        if processes is None:
+            tree = build_tree(
+                path=input_source,
+                start_path=input_source,
+                target_level=level,
+                level=0,
+                check_mimetype=check_mimetype
+            )
+        else:
+            tree = build_tree_multiprocessing(
+                path=input_source,
+                start_path=input_source,
+                target_level=level,
+                level=0,
+                check_mimetype=check_mimetype,
+                processes=processes
+            )
     else:
-        tree = build_tree_multiprocessing(
-            path=directory,
-            start_path=directory,
-            target_level=level,
-            level=0,
-            check_mimetype=check_mimetype,
-            processes=processes
-        )
+        with open(input_source, "r") as fh:
+            tree = DirectoryTreeSummary.from_file(fh)
+    assert tree is not None
 
     elapsed = time() - start
-    click.secho("Time in seconds   : ", nl=False)
+    click.secho("Time in seconds: ", nl=False)
     click.secho("{:.2f}".format(elapsed), fg="green")
 
     click.secho("")
@@ -185,6 +198,10 @@ def report(directory, level, sort_by, reverse, check_mimetype, processes):
         reverse=reverse,
         check_mimetype=check_mimetype
     )
+
+    if json_output_file is not None:
+        with open(json_output_file, "w") as fh:
+            tree.to_json(fh)
 
 
 @dmaudit.command()
