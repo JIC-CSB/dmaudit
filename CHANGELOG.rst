@@ -10,9 +10,6 @@ This change log uses principles from `keep a changelog <http://keepachangelog.co
 Added
 ^^^^^
 
-- Added ``-j/--json-output-file`` option to ``dmaudit report`` command
-- Added ability to take output json as input to ``dmaudit report`` command
-
 
 Changed
 ^^^^^^^
@@ -32,6 +29,16 @@ Fixed
 
 Security
 ^^^^^^^^
+
+[0.9.0] - 2019-09-23
+--------------------
+
+Added
+^^^^^
+
+- Added ``-j/--json-output-file`` option to ``dmaudit report`` command
+- Added ability to take output json as input to ``dmaudit report`` command
+
 
 [0.8.0] - 2019-09-21
 --------------------
