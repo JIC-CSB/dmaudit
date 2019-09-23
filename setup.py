@@ -1,7 +1,7 @@
 from setuptools import setup
 
 url = "https://github.com/JIC-CSB/dmaudit"
-version = "0.8.0"
+version = "0.9.0"
 readme = open('README.rst').read()
 
 setup(
